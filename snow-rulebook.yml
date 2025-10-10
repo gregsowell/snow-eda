@@ -1,0 +1,50 @@
+---
+- name: ServiceNOW Events
+  hosts: all
+  execution_strategy: parallel
+  sources:
+    - ansible.eda.webhook:
+        port: "{{ webhook_port | default(5000) }}"
+        token: "{{ webhook_token | default(omit) }}"
+  rules:
+    - name: ServiceNOW | Provision Virtual Machine
+      condition: |
+        event.payload.requester == "gsowell@redhat.com" and
+        event.payload.catalog_item == "VM Provision" and
+        event.payload.event == "SERVICE_CATALOG"
+      action:
+        run_workflow_template:
+          name: ServiceNOW | VM Provision
+          organization: Default
+          job_args:
+            extra_vars:
+              _hosts: "{{ event.payload.hostname }}"
+              snow_request_name: "{{ event.payload.request_name }}"
+              virtual_machines:
+                - name: "{{ event.payload.hostname }}"
+                  cluster: "{{ event.payload.cluster }}"
+                  vm_size: "{{ event.payload.vm_size }}"
+                  custom_fields:
+                    vmware_linked_clone: "{{ event.payload.linked_clone }}"
+                    vmware_template: "{{ event.payload.template }}"
+
+    - name: ServiceNOW | Deprovision Virtual Machine
+      condition: |
+        event.payload.requester == "gsowell@redhat.com" and
+        event.payload.catalog_item == "VM Decomission" and
+        event.payload.event == "SERVICE_CATALOG"
+      action:
+        run_workflow_template:
+          name: ServiceNOW | VM Deprovision
+          organization: Default
+          job_args:
+            extra_vars:
+              _hosts: "{{ event.payload.virtual_machine }}"
+              snow_request_name: "{{ event.payload.request_name }}"
+              virtual_machines:
+                - name: "{{ event.payload.virtual_machine }}"
+
+    - name: ServiceNOW | Unhandled Events
+      condition: event.payload is defined
+      action:
+        debug:
