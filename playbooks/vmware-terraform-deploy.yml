@@ -3,13 +3,8 @@
   hosts: localhost
   gather_facts: no
   vars:
-    terraform_search_roots:
-      - "{{ playbook_dir | dirname }}"
-      - "{{ playbook_dir }}"
-      - "{{ lookup('env', 'PWD') }}"
-      - "/runner/project"
-      - "/root/snow-eda"
-    
+    terraform_variables_file: /root/snow-eda/vmware-terraform/terraform.tfvars
+        
     # test data
     catalog_item: GregSowell VMWare VM Terraform AAP
     cpus: '4'
@@ -27,30 +22,6 @@
     vm_name: NewVM1
 
   tasks:
-    - name: Find terraform.tfvars in project roots
-      find:
-        paths: "{{ item }}"
-        recurse: true
-        file_type: file
-        patterns:
-          - "terraform.tfvars"
-      loop: "{{ terraform_search_roots | unique }}"
-      register: terraform_tfvars_search
-      failed_when: false
-
-    - name: Collect discovered terraform.tfvars paths
-      set_fact:
-        terraform_tfvars_found: "{{ terraform_tfvars_search.results | selectattr('files', 'defined') | map(attribute='files') | flatten | map(attribute='path') | list }}"
-
-    - name: Resolve terraform.tfvars path
-      set_fact:
-        terraform_variables_file: "{{ (terraform_tfvars_found | select('match', '.*/vmware-terraform/terraform\\.tfvars$') | list | first) | default((terraform_tfvars_found | first), true) | default('') }}"
-
-    - name: Fail when terraform.tfvars is missing
-      fail:
-        msg: "terraform.tfvars not found. Searched roots={{ terraform_search_roots | unique | join(', ') }} found={{ terraform_tfvars_found | default([]) | join(', ') }}"
-      when: terraform_variables_file | length == 0
-
     - name: Insert or update VM entry in terraform.tfvars
       blockinfile:
         path: "{{ terraform_variables_file }}"
