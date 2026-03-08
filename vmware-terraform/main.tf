@@ -22,11 +22,11 @@ resource "vsphere_virtual_machine" "vm" {
     adapter_type = data.vsphere_virtual_machine.templates[each.key].network_interface_types[0]
   }
 
-#  disk {
-#    label            = "disk0"
-#    size             = each.value.disk_gb
-#    thin_provisioned = data.vsphere_virtual_machine.templates[each.key].disks[0].thin_provisioned
-#  }
+  disk {
+    label            = "disk0"
+    size             = data.vsphere_virtual_machine.templates[each.key].disks[0].size
+    thin_provisioned = data.vsphere_virtual_machine.templates[each.key].disks[0].thin_provisioned
+  }
 
   clone {
     template_uuid = data.vsphere_virtual_machine.templates[each.key].id
