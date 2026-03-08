@@ -4,7 +4,8 @@
   gather_facts: no
   vars:
     snow_eda_directory: /root/snow-eda
-    terraform_variables_file: "{{ snow_eda_directory }}/vmware-terraform/terraform.tfvars"
+    terraform_directory: "{{ snow_eda_directory }}/vmware-terraform"
+    terraform_variables_file: "{{ terraform_directory }}/terraform.tfvars"
 
     # test data
     catalog_item: GregSowell VMWare VM Terraform AAP
@@ -61,22 +62,22 @@
               notes     = "{{ request_name }}"
             }
 
-    # - name: Initialize Terraform
-    #   command: terraform init
-    #   args:
-    #     chdir: "{{ terraform_directory }}"
+    - name: Initialize Terraform
+      command: terraform init
+      args:
+        chdir: "{{ terraform_directory }}"
 
-    # - name: Plan Terraform deployment
-    #   command: terraform plan -var-file="{{ terraform_variables_file }}"
-    #   args:
-    #     chdir: "{{ terraform_directory }}"
-    #   register: terraform_plan
+    - name: Plan Terraform deployment
+      command: terraform plan -var-file="{{ terraform_variables_file }}"
+      args:
+        chdir: "{{ terraform_directory }}"
+      register: terraform_plan
 
-    # - name: Display Terraform plan output
-    #   debug:
-    #     var: terraform_plan.stdout
+    - name: Display Terraform plan output
+      debug:
+        var: terraform_plan.stdout
 
-    # - name: Apply Terraform deployment
-    #   command: terraform apply -var-file="{{ terraform_variables_file }}" -auto-approve
-    #   args:
-    #     chdir: "{{ terraform_directory }}"
+    - name: Apply Terraform deployment
+      command: terraform apply -var-file="{{ terraform_variables_file }}" -auto-approve
+      args:
+        chdir: "{{ terraform_directory }}"
