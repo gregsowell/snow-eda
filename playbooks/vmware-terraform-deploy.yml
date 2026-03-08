@@ -1,10 +1,11 @@
 ---
 - name: Deploy VMware infrastructure using Terraform from EDA
-  hosts: localhost
+  hosts: ee-builder
   gather_facts: no
   vars:
-    terraform_variables_file: /root/snow-eda/vmware-terraform/terraform.tfvars
-        
+    snow_eda_directory: /root/snow-eda
+    terraform_variables_file: "{{ snow_eda_directory }}/vmware-terraform/terraform.tfvars"
+
     # test data
     catalog_item: GregSowell VMWare VM Terraform AAP
     cpus: '4'
@@ -22,6 +23,19 @@
     vm_name: NewVM1
 
   tasks:
+    - name: Check if snow-eda directory exists
+      stat:
+        path: "{{ snow_eda_directory }}"
+      register: snow_eda_dir   
+
+    - name: Clone git repo if snow-eda directory does not exist
+      when: not snow_eda_dir.stat.exists
+      ansible.builtin.shell: git clone https://github.com/gregsowell/snow-eda.git
+
+    - name: Git pull if snow-eda directory exists
+      when: snow_eda_dir.stat.exists
+      ansible.builtin.shell: git -C {{ snow_eda_directory }} pull
+      
     - name: Insert or update VM entry in terraform.tfvars
       blockinfile:
         path: "{{ terraform_variables_file }}"
