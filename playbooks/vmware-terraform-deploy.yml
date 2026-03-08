@@ -4,7 +4,7 @@
   gather_facts: no
   vars:
     # terraform_directory: "{{ playbook_dir }}/../vmware-terraform"
-    terraform_directory: "./../vmware-terraform"
+    terraform_directory: "../vmware-terraform"
     terraform_variables_file: "{{ terraform_directory }}/terraform.tfvars"
 
     # test data
