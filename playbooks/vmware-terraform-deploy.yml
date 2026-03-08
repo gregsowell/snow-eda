@@ -3,8 +3,10 @@
   hosts: localhost
   gather_facts: no
   vars:
-    terraform_directory: "{{ playbook_dir }}/../vmware-terraform"
-    terraform_variables_file: "{{ terraform_directory }}/terraform.tfvars"
+    terraform_tfvars_candidates:
+      - "{{ playbook_dir }}/../vmware-terraform/terraform.tfvars"
+      - "{{ playbook_dir }}/terraform/variables.tfvars"
+      - "{{ playbook_dir }}/terraform.tfvars"
 
     # test data
     catalog_item: GregSowell VMWare VM Terraform AAP
@@ -23,6 +25,25 @@
     vm_name: NewVM1
 
   tasks:
+    - name: Check candidate terraform variable files
+      stat:
+        path: "{{ item }}"
+      loop: "{{ terraform_tfvars_candidates }}"
+      register: terraform_tfvars_stats
+
+    - name: Resolve terraform.tfvars path
+      set_fact:
+        terraform_variables_file: "{{ (terraform_tfvars_stats.results | selectattr('stat.exists', 'equalto', true) | map(attribute='item') | list | first) | default('') }}"
+
+    - name: Fail if terraform.tfvars was not found
+      fail:
+        msg: "terraform.tfvars was not found. Checked: {{ terraform_tfvars_candidates | join(', ') }}"
+      when: terraform_variables_file | length == 0
+
+    - name: Resolve terraform working directory
+      set_fact:
+        terraform_directory: "{{ terraform_variables_file | dirname }}"
+
     - name: Insert or update VM entry in terraform.tfvars
       blockinfile:
         path: "{{ terraform_variables_file }}"
