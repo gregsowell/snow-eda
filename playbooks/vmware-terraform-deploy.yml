@@ -3,25 +3,42 @@
   hosts: localhost
   gather_facts: no
   vars:
-    terraform_directory: "{{ playbook_dir }}/terraform/configuration"
-    terraform_variables_file: "{{ playbook_dir }}/terraform/variables.tfvars"
+    terraform_directory: "{{ playbook_dir }}/../vmware-terraform"
+    terraform_variables_file: "{{ terraform_directory }}/terraform.tfvars"
   tasks:
-    - name: Initialize Terraform
-      command: terraform init
-      args:
-        chdir: "{{ terraform_directory }}"
+    - name: Insert or update VM entry in terraform.tfvars
+      blockinfile:
+        path: "{{ terraform_variables_file }}"
+        insertafter: '^####start-vms-here$'
+        marker: "####{mark}-{{ vm_name }}"
+        marker_begin: "begin"
+        marker_end: "end"
+        block: |
+          {{ vm_name }} = {
+            template  = "/{{ dc_name }}/vm/Templates/{{ os_type }}"
+            network   = "{{ network | default('Greg') }}"
+            cpu       = {{ cpus | int }}
+            memory_mb = {{ ram_size | int }}
+            disk_gb   = {{ hd_size | int }}
+            notes     = "{{ request_name }}"
+          }
 
-    - name: Plan Terraform deployment
-      command: terraform plan -var-file="{{ terraform_variables_file }}"
-      args:
-        chdir: "{{ terraform_directory }}"
-      register: terraform_plan
+    # - name: Initialize Terraform
+    #   command: terraform init
+    #   args:
+    #     chdir: "{{ terraform_directory }}"
 
-    - name: Display Terraform plan output
-      debug:
-        var: terraform_plan.stdout
+    # - name: Plan Terraform deployment
+    #   command: terraform plan -var-file="{{ terraform_variables_file }}"
+    #   args:
+    #     chdir: "{{ terraform_directory }}"
+    #   register: terraform_plan
 
-    - name: Apply Terraform deployment
-      command: terraform apply -var-file="{{ terraform_variables_file }}" -auto-approve
-      args:
-        chdir: "{{ terraform_directory }}"
+    # - name: Display Terraform plan output
+    #   debug:
+    #     var: terraform_plan.stdout
+
+    # - name: Apply Terraform deployment
+    #   command: terraform apply -var-file="{{ terraform_variables_file }}" -auto-approve
+    #   args:
+    #     chdir: "{{ terraform_directory }}"
