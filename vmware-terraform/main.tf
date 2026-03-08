@@ -22,10 +22,15 @@ resource "vsphere_virtual_machine" "vm" {
     adapter_type = data.vsphere_virtual_machine.templates[each.key].network_interface_types[0]
   }
 
-  disk {
-    label            = "disk0"
-    size             = data.vsphere_virtual_machine.templates[each.key].disks[0].size
-    thin_provisioned = data.vsphere_virtual_machine.templates[each.key].disks[0].thin_provisioned
+  dynamic "disk" {
+    for_each = data.vsphere_virtual_machine.templates[each.key].disks
+    content {
+      label            = disk.value.label
+      size             = disk.value.size
+      unit_number      = disk.value.unit_number
+      thin_provisioned = disk.value.thin_provisioned
+      eagerly_scrub    = disk.value.eagerly_scrub
+    }
   }
 
   clone {
