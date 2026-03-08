@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: no
   vars:
-    terraform_variables_file: /root/snow-eda/terraform/terraform.tfvars
+    terraform_variables_file: /root/snow-eda/vmware-terraform/terraform.tfvars
     
     # test data
     catalog_item: GregSowell VMWare VM Terraform AAP
