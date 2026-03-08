@@ -15,6 +15,7 @@ resource "vsphere_virtual_machine" "vm" {
   memory    = each.value.memory_mb
   guest_id  = data.vsphere_virtual_machine.templates[each.key].guest_id
   scsi_type = data.vsphere_virtual_machine.templates[each.key].scsi_type
+  firmware  = data.vsphere_virtual_machine.templates[each.key].firmware
   annotation = each.value.notes
 
   network_interface {
