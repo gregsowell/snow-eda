@@ -3,10 +3,10 @@
   hosts: localhost
   gather_facts: no
   vars:
-    terraform_tfvars_candidates:
-      - "{{ playbook_dir }}/../vmware-terraform/terraform.tfvars"
-      - "{{ playbook_dir }}/terraform/variables.tfvars"
-      - "{{ playbook_dir }}/terraform.tfvars"
+    terraform_search_root: "{{ playbook_dir | dirname }}"
+    terraform_tfvars_patterns:
+      - "terraform.tfvars"
+      - "variables.tfvars"
 
     # test data
     catalog_item: GregSowell VMWare VM Terraform AAP
@@ -25,19 +25,45 @@
     vm_name: NewVM1
 
   tasks:
-    - name: Check candidate terraform variable files
-      stat:
-        path: "{{ item }}"
-      loop: "{{ terraform_tfvars_candidates }}"
-      register: terraform_tfvars_stats
+    - name: Find terraform variable files in project
+      find:
+        paths: "{{ terraform_search_root }}"
+        recurse: true
+        file_type: file
+        patterns: "{{ terraform_tfvars_patterns }}"
+      register: terraform_tfvars_find
 
     - name: Resolve terraform.tfvars path
       set_fact:
-        terraform_variables_file: "{{ (terraform_tfvars_stats.results | selectattr('stat.exists', 'equalto', true) | map(attribute='item') | list | first) | default('') }}"
+        terraform_variables_file: >-
+          {{
+            (terraform_tfvars_find.files
+            | map(attribute='path')
+            | select('match', '.*/vmware-terraform/terraform\\.tfvars$')
+            | list
+            | first)
+            | default(
+                (terraform_tfvars_find.files
+                | map(attribute='path')
+                | select('match', '.*/terraform\\.tfvars$')
+                | list
+                | first),
+                true
+              )
+            | default(
+                (terraform_tfvars_find.files
+                | map(attribute='path')
+                | select('match', '.*/variables\\.tfvars$')
+                | list
+                | first),
+                true
+              )
+            | default('')
+          }}
 
     - name: Fail if terraform.tfvars was not found
       fail:
-        msg: "terraform.tfvars was not found. Checked: {{ terraform_tfvars_candidates | join(', ') }}"
+        msg: "terraform tfvars file was not found under {{ terraform_search_root }}. Found files: {{ terraform_tfvars_find.files | map(attribute='path') | list | join(', ') }}"
       when: terraform_variables_file | length == 0
 
     - name: Resolve terraform working directory
