@@ -14,7 +14,7 @@ vms = {
 ####start-vms-here
 
   bastion-01 = {
-    template  = "Rocky9"
+    template  = "/MNS/vm/Templates/Rocky9"
     cpu       = 2
     memory_mb = 4096
     disk_gb   = 40
