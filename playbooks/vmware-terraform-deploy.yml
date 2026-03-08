@@ -3,11 +3,8 @@
   hosts: localhost
   gather_facts: no
   vars:
-    terraform_search_root: "{{ playbook_dir | dirname }}"
-    terraform_tfvars_patterns:
-      - "terraform.tfvars"
-      - "variables.tfvars"
-
+    terraform_variables_file: /root/snow-eda/terraform/terraform.tfvars
+    
     # test data
     catalog_item: GregSowell VMWare VM Terraform AAP
     cpus: '4'
@@ -25,51 +22,6 @@
     vm_name: NewVM1
 
   tasks:
-    - name: Find terraform variable files in project
-      find:
-        paths: "{{ terraform_search_root }}"
-        recurse: true
-        file_type: file
-        patterns: "{{ terraform_tfvars_patterns }}"
-      register: terraform_tfvars_find
-
-    - name: Resolve terraform.tfvars path
-      set_fact:
-        terraform_variables_file: >-
-          {{
-            (terraform_tfvars_find.files
-            | map(attribute='path')
-            | select('match', '.*/vmware-terraform/terraform\\.tfvars$')
-            | list
-            | first)
-            | default(
-                (terraform_tfvars_find.files
-                | map(attribute='path')
-                | select('match', '.*/terraform\\.tfvars$')
-                | list
-                | first),
-                true
-              )
-            | default(
-                (terraform_tfvars_find.files
-                | map(attribute='path')
-                | select('match', '.*/variables\\.tfvars$')
-                | list
-                | first),
-                true
-              )
-            | default('')
-          }}
-
-    - name: Fail if terraform.tfvars was not found
-      fail:
-        msg: "terraform tfvars file was not found under {{ terraform_search_root }}. Found files: {{ terraform_tfvars_find.files | map(attribute='path') | list | join(', ') }}"
-      when: terraform_variables_file | length == 0
-
-    - name: Resolve terraform working directory
-      set_fact:
-        terraform_directory: "{{ terraform_variables_file | dirname }}"
-
     - name: Insert or update VM entry in terraform.tfvars
       blockinfile:
         path: "{{ terraform_variables_file }}"
