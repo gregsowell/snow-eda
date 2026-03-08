@@ -12,7 +12,8 @@ data "vsphere_datastore" "ds" {
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
-data "vsphere_network" "net" {
-  name          = var.network
+data "vsphere_network" "networks" {
+  for_each      = var.vms
+  name          = each.value.network
   datacenter_id = data.vsphere_datacenter.dc.id
 }

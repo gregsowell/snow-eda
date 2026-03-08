@@ -15,6 +15,7 @@ vms = {
 
 #  bastion-01 = {
 #    template  = "/MNS/vm/Templates/Rocky9"
+#    network   = "Greg"
 #    cpu       = 2
 #    memory_mb = 4096
 #    disk_gb   = 40

@@ -10,10 +10,10 @@ variable "network"    { default = "Greg" }
 variable "vm_folder"  { default = "Greg/redhat/terraform" }
 
 variable "vms" {
-  description = "VM definitions"
-
+  description = "Map of VMs to create"
   type = map(object({
     template  = string
+    network   = string
     cpu       = number
     memory_mb = number
     disk_gb   = number
