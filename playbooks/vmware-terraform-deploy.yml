@@ -36,22 +36,30 @@
       when: snow_eda_dir.stat.exists
       ansible.builtin.shell: git -C {{ snow_eda_directory }} pull
       
+    - name: Remove existing VM entry block (reposition safeguard)
+      blockinfile:
+        path: "{{ terraform_variables_file }}"
+        marker: "####{mark}-{{ vm_name }}"
+        marker_begin: "begin"
+        marker_end: "end"
+        state: absent
+
     - name: Insert or update VM entry in terraform.tfvars
       blockinfile:
         path: "{{ terraform_variables_file }}"
-        insertafter: '^####start-vms-here$'
+        insertafter: '^\s*####start-vms-here\s*$'
         marker: "####{mark}-{{ vm_name }}"
         marker_begin: "begin"
         marker_end: "end"
         block: |
-          {{ vm_name }} = {
-            template  = "/{{ dc_name }}/vm/Templates/{{ os_type }}"
-            network   = "{{ network | default('Greg') }}"
-            cpu       = {{ cpus | int }}
-            memory_mb = {{ ram_size | int }}
-            disk_gb   = {{ hd_size | int }}
-            notes     = "{{ request_name }}"
-          }
+            {{ vm_name }} = {
+              template  = "/{{ dc_name }}/vm/Templates/{{ os_type }}"
+              network   = "{{ network | default('Greg') }}"
+              cpu       = {{ cpus | int }}
+              memory_mb = {{ ram_size | int }}
+              disk_gb   = {{ hd_size | int }}
+              notes     = "{{ request_name }}"
+            }
 
     # - name: Initialize Terraform
     #   command: terraform init
