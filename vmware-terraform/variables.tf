@@ -16,7 +16,7 @@ variable "vms" {
     network   = string
     cpu       = number
     memory_mb = number
-    disk_gb   = number
+#    disk_gb   = number
     notes     = string
   }))
 }
