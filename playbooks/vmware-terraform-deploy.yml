@@ -5,6 +5,23 @@
   vars:
     terraform_directory: "{{ playbook_dir }}/../vmware-terraform"
     terraform_variables_file: "{{ terraform_directory }}/terraform.tfvars"
+
+    # test data
+    catalog_item: GregSowell VMWare VM Terraform AAP
+    cpus: '4'
+    dc_name: MNS
+    default_gateway: 10.0.50.1
+    event: SERVICE_CATALOG
+    hd_size: '40'
+    ip_address: 10.0.50.24
+    os_type: Rocky9
+    ram_size: '4096'
+    request_name: 551ea43087a7721064a055383cbb3585
+    requester: gsowell@redhat.com
+    subnet_mask: 255.255.255.0
+    vm_folder: /Greg/redhat/terraform
+    vm_name: NewVM1
+
   tasks:
     - name: Insert or update VM entry in terraform.tfvars
       blockinfile:
