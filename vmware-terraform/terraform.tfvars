@@ -12,6 +12,16 @@
 
 vms = {
 ####start-vms-here
+####begin-NewVM1
+NewVM1 = {
+  template  = "/MNS/vm/Templates/Rocky9"
+  network   = "Greg"
+  cpu       = 4
+  memory_mb = 4096
+  disk_gb   = 40
+  notes     = "d99170d187a3361064a055383cbb35cb"
+}
+####end-NewVM1
 
 
 #  bastion-01 = {
