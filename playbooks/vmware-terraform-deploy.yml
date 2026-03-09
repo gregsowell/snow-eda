@@ -40,6 +40,13 @@
       when: not snow_eda_dir.stat.exists
       # ansible.builtin.shell: git clone https://github.com/gregsowell/snow-eda.git
       ansible.builtin.shell: "git clone {{ backup_repo }}" 
+      args:
+        chdir: /root
+      environment:
+        GIT_COMMITTER_NAME: "{{ git_name | default(omit) }}"
+        GIT_COMMITTER_EMAIL: "{{ git_email | default(omit) }}"
+        GIT_AUTHOR_NAME: "{{ git_name | default(omit) }}"
+        GIT_AUTHOR_EMAIL: "{{ git_email | default(omit) }}"
 
     - name: Git pull if snow-eda directory exists
       when: snow_eda_dir.stat.exists
