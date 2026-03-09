@@ -144,7 +144,7 @@
     - name: create the ssh key file based on the supplied cred
       become: true
       run_once: true
-      delegate_to: localhost
+      # delegate_to: localhost
       ansible.builtin.copy:
         dest: "/tmp/id_rsa"
         content: "{{ cert_key }}"
