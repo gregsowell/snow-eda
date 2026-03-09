@@ -63,23 +63,43 @@
             }
 
     - name: Initialize Terraform
-      command: terraform init
+      command:
+        argv:
+          - terraform
+          - init
+          - -no-color
+          - -input=false
       args:
         chdir: "{{ terraform_directory }}"
 
     - name: Plan Terraform deployment
-      # command: terraform plan # -var-file="{{ terraform_variables_file }}"
-      ansible.builtin.shell: terraform plan # -var-file="{{ terraform_variables_file }}"
+      command:
+        argv:
+          - terraform
+          - plan
+          - -no-color
+          - -input=false
+          - -out=tfplan
       args:
         chdir: "{{ terraform_directory }}"
       register: terraform_plan
+      async: 1800
+      poll: 5
 
     - name: Display Terraform plan output
       debug:
         var: terraform_plan.stdout
 
     - name: Apply Terraform deployment
-      # command: terraform apply -var-file="{{ terraform_variables_file }}" -auto-approve
-      command: terraform apply -auto-approve
+      command:
+        argv:
+          - terraform
+          - apply
+          - -no-color
+          - -input=false
+          - -auto-approve
+          - tfplan
       args:
         chdir: "{{ terraform_directory }}"
+      async: 1800
+      poll: 5
