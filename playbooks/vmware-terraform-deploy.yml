@@ -23,6 +23,13 @@
     vm_folder: /Greg/redhat/terraform
     vm_name: NewVM1
 
+    # Git settings
+    # backup_dir: "/opt/net_backups"
+    # backup_file: "{{ backup_dir }}/{{ inventory_hostname }}"
+    backup_repo: git@github.com:gregsowell/snow-eda
+    git_name: Git Backup
+    git_email: gitbackup@gregsowell.com
+
   tasks:
     - name: Check if snow-eda directory exists
       stat:
@@ -133,3 +140,29 @@
         TF_VAR_vsphere_password: "{{ tf_vsphere_password }}"
       async: 1800
       poll: 5
+
+    - name: create the ssh key file based on the supplied cred
+      become: true
+      run_once: true
+      delegate_to: localhost
+      ansible.builtin.copy:
+        dest: "/tmp/id_rsa"
+        content: "{{ cert_key }}"
+        mode: '0600'
+  #    no_log: true
+
+    - name: push the repo back with no tags
+      ansible.builtin.shell: "git add *; git commit -m '{{ vm_name }}-Add'; git config --global core.sshCommand 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /tmp/id_rsa'; git push"
+      args:
+        chdir: "{{ terraform_directory }}"
+      environment:
+        GIT_COMMITTER_NAME: "{{ git_name | default(omit) }}"
+        GIT_COMMITTER_EMAIL: "{{ git_email | default(omit) }}"
+        GIT_AUTHOR_NAME: "{{ git_name | default(omit) }}"
+        GIT_AUTHOR_EMAIL: "{{ git_email | default(omit) }}"
+      # delegate_to: localhost
+      changed_when: git_return.stderr != "Everything up-to-date"
+      run_once: true
+      # connection: local
+      register: git_return
+      # become: True
