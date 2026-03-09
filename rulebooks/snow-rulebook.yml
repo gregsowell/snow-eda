@@ -53,7 +53,7 @@
         run_workflow_template:
           name: SNOW Provision VM Via Terraform
           organization: Default
-          job_args:
+          # job_args:
             # extra_vars:
             #   _hosts: "{{ event.payload.virtual_machine }}"
             #   snow_request_name: "{{ event.payload.request_name }}"
