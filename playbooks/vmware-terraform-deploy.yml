@@ -166,3 +166,11 @@
       # connection: local
       register: git_return
       # become: True
+
+    - name: Remove temporary SSH key file "/tmp/id_rsa"
+      ansible.builtin.file:
+        path: /tmp/id_rsa
+        state: absent
+      run_once: true
+      # delegate_to: localhost
+      # become: true
