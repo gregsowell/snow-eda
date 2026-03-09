@@ -23,9 +23,9 @@
     vm_folder: "{{ ansible_eda.event.payload.vm_folder | default('/Greg/redhat/terraform') }}"
     vm_name: "{{ ansible_eda.event.payload.vm_name | default('NewVM1') }}"
 
+    remove_vm: false
+
     # Git settings
-    # backup_dir: "/opt/net_backups"
-    # backup_file: "{{ backup_dir }}/{{ inventory_hostname }}"
     backup_repo: git@github.com:gregsowell/snow-eda
     git_name: Git Backup
     git_email: gitbackup@gregsowell.com
@@ -69,6 +69,7 @@
         state: absent
 
     - name: Insert or update VM entry in terraform.tfvars
+      when: remove_vm | bool == false
       blockinfile:
         path: "{{ terraform_variables_file }}"
         insertafter: '^\s*####start-vms-here\s*$'
