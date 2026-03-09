@@ -31,6 +31,14 @@
     git_email: gitbackup@gregsowell.com
 
   tasks:
+    - name: Create the ssh key file based on the supplied cred
+      become: true
+      run_once: true
+      ansible.builtin.copy:
+        dest: "/tmp/id_rsa"
+        content: "{{ cert_key }}"
+        mode: '0600'
+
     - name: Check if snow-eda directory exists
       stat:
         path: "{{ snow_eda_directory }}"
@@ -39,7 +47,7 @@
     - name: Clone git repo if snow-eda directory does not exist
       when: not snow_eda_dir.stat.exists
       # ansible.builtin.shell: git clone https://github.com/gregsowell/snow-eda.git
-      ansible.builtin.shell: "git clone {{ backup_repo }}" 
+      ansible.builtin.shell: "git config --global core.sshCommand 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /tmp/id_rsa'; git clone {{ backup_repo }}" 
       args:
         chdir: /root
       environment:
@@ -50,7 +58,7 @@
 
     - name: Git pull if snow-eda directory exists
       when: snow_eda_dir.stat.exists
-      ansible.builtin.shell: git -C {{ snow_eda_directory }} pull
+      ansible.builtin.shell: "git config --global core.sshCommand 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /tmp/id_rsa'; git -C {{ snow_eda_directory }} pull"
       
     - name: Remove existing VM entry block (reposition safeguard)
       blockinfile:
@@ -148,16 +156,6 @@
         TF_VAR_vsphere_password: "{{ tf_vsphere_password }}"
       async: 1800
       poll: 5
-
-    - name: create the ssh key file based on the supplied cred
-      become: true
-      run_once: true
-      # delegate_to: localhost
-      ansible.builtin.copy:
-        dest: "/tmp/id_rsa"
-        content: "{{ cert_key }}"
-        mode: '0600'
-  #    no_log: true
 
     - name: push the repo back with no tags
       ansible.builtin.shell: "git add *; git commit -m '{{ vm_name }}-Add'; git config --global core.sshCommand 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /tmp/id_rsa'; git push"
