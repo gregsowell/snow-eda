@@ -60,6 +60,22 @@
             #   virtual_machines:
             #     - name: "{{ event.payload.virtual_machine }}"
 
+    - name: ServiceNOW | Terraform Remove VMware
+      condition: |
+        event.payload.requester == "gsowell@redhat.com" and
+        event.payload.catalog_item == "GregSowell Remove VMWare VM Terraform AAP" and
+        event.payload.event == "SERVICE_CATALOG"
+      action:
+        run_workflow_template:
+          name: SNOW Provision VM Via Terraform
+          organization: Default
+          job_args:
+            extra_vars:
+              remove_vm: true
+            #   snow_request_name: "{{ event.payload.request_name }}"
+            #   virtual_machines:
+            #     - name: "{{ event.payload.virtual_machine }}"
+
     - name: ServiceNOW | Unhandled Events
       condition: event.payload is defined
       action:
