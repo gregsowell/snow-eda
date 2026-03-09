@@ -38,7 +38,8 @@
 
     - name: Clone git repo if snow-eda directory does not exist
       when: not snow_eda_dir.stat.exists
-      ansible.builtin.shell: git clone https://github.com/gregsowell/snow-eda.git
+      # ansible.builtin.shell: git clone https://github.com/gregsowell/snow-eda.git
+      ansible.builtin.shell: "git clone {{ backup_repo }}" 
 
     - name: Git pull if snow-eda directory exists
       when: snow_eda_dir.stat.exists
