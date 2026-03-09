@@ -68,7 +68,8 @@
         chdir: "{{ terraform_directory }}"
 
     - name: Plan Terraform deployment
-      command: terraform plan # -var-file="{{ terraform_variables_file }}"
+      # command: terraform plan # -var-file="{{ terraform_variables_file }}"
+      ansible.builtin.shell: terraform plan # -var-file="{{ terraform_variables_file }}"
       args:
         chdir: "{{ terraform_directory }}"
       register: terraform_plan
